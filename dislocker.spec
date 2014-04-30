@@ -1,7 +1,7 @@
 Summary:        Utility to access BitLocker encrypted volumes
 Name:           dislocker
 Version:        0.3.1
-Release:        2.20140423git%{?dist}
+Release:        3.20140423git%{?dist}
 License:        GPLv2+
 Group:          Applications/System
 URL:            https://github.com/Aorimn/dislocker#readme
@@ -82,6 +82,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/fuse-%{name}.1*
 
 %changelog
+* Thu May 01 2014 Robert Scheck <robert@fedoraproject.org> 0.3.1-3.20140423git
+- Rebuild for PolarSSL 1.3.6
+
 * Wed Apr 23 2014 Robert Scheck <robert@fedoraproject.org> 0.3.1-2.20140423git
 - Upgrade to GIT 20140423 (#991689 #c15)
 - Added %%{?__global_ldflags} for make (#991689 #c16)
