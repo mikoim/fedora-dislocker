@@ -1,27 +1,25 @@
-Summary:        Utility to access BitLocker encrypted volumes
-Name:           dislocker
-Version:        0.3.1
-Release:        6.20140423git%{?dist}
-License:        GPLv2+
-Group:          Applications/System
-URL:            https://github.com/Aorimn/dislocker#readme
-# When using tarball from released upstream version:
-# - (not yet available)
-#
-# When generating tarball package from upstream git:
-# - git clone -b develop git://github.com/Aorimn/dislocker.git dislocker-0.3.1
-# - cd dislocker-0.3.1; git checkout a1ff2792291837505f3de9b6e008ddb7bd73260a
-# - rm -rf .git; cd ..; tar cvfj dislocker-0.3.1.tar.bz2 dislocker-0.3.1
-# - Use the visible date of latest git log entry for %{release} in spec file
-Source0:        %{name}-%{version}.tar.bz2
-BuildRequires:  polarssl-devel
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Summary:         Utility to access BitLocker encrypted volumes
+Name:            dislocker
+Version:         0.4.1
+Release:         1%{?dist}
+License:         GPLv2+
+Group:           Applications/System
+URL:             https://github.com/Aorimn/dislocker
+Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
+Patch0:          dislocker-0.4.1-paths.patch
+Patch1:          dislocker-0.4.1-off_t.patch
+Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
+Requires(post):  %{_sbindir}/update-alternatives
+Requires(preun): %{_sbindir}/update-alternatives
+Provides:        %{_bindir}/%{name}
+BuildRequires:   %{_includedir}/polarssl/config.h
+BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
 under a Linux system. The driver used to only read volumes encrypted under a
-Microsoft Windows 7 system but is now Microsoft Windows Vista capable and has
-the write functionality.
+Microsoft Windows 7 system - but is now Microsoft Windows Vista and 8 capable
+and has the write functionality.
 
 The file name where the BitLocker encrypted partition will be decrypted needs
 to be given. This may take a long time, depending on the size of the encrypted
@@ -29,59 +27,116 @@ partition. But afterward, once the partition is decrypted, the access to the
 NTFS partition will be faster than with FUSE. Another thing to think about is
 the size of the disk (same size as the volume that is tried to be decrypted).
 Nevertheless, once the partition is decrypted, the file can be mounted as any
-NTFS partition.
+NTFS partition and won't have any link to the original BitLocker partition.
+
+%package libs
+Summary:         Libraries for applications using dislocker
+Group:           System Environment/Libraries
+
+%description libs
+The dislocker-libs package provides the essential shared libraries for any
+dislocker client program or interface.
 
 %package -n fuse-dislocker
-Summary:        FUSE-Filesystem to access BitLocker encrypted volumes
-Group:          Applications/System
-BuildRequires:  fuse-devel
+Summary:         FUSE filesystem to access BitLocker encrypted volumes
+Group:           Applications/System
+Provides:        %{_bindir}/%{name}
+Provides:        dislocker-fuse = %{version}-%{release}
+Provides:        dislocker-fuse%{?_isa} = %{version}-%{release}
+Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
+Requires(post):  %{_sbindir}/update-alternatives
+Requires(preun): %{_sbindir}/update-alternatives
+BuildRequires:   fuse-devel
 
 %description -n fuse-dislocker
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
 under a Linux system. The driver used to only read volumes encrypted under a
-Microsoft Windows 7 system but is now Microsoft Windows Vista capable and has
-the write functionality.
+Microsoft Windows 7 system - but is now Microsoft Windows Vista and 8 capable
+and has the write functionality.
 
-A mount point needs to be given to fuse-dislocker. Once keys are decrypted, a
+A mount point needs to be given to dislocker-fuse. Once keys are decrypted, a
 file named 'dislocker-file' appears into this provided mount point. This file
 is a virtual NTFS partition, it can be mounted as any NTFS partition and then
 reading from it or writing to it is possible.
 
 %prep
 %setup -q
+%patch0 -p1 -b .paths
+%patch1 -p1 -b .off_t
 
 %build
+# PolarSSL was bought by ARM in November 2014 and renamed to mbed TLS
+if [ -f %{_libdir}/libmbedtls.so ]; then
+  sed -e 's/-lpolarssl/-lmbedtls/g' -i src/Makefile src/accesses/user_pass/Makefile
+fi
+
 cd src
-make fuse %{?_smp_mflags} WFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?__global_ldflags}"
-cp -p %{name} fuse-%{name}
-make clean
-make file %{?_smp_mflags} WFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{?__global_ldflags}"
+make %{?_smp_mflags} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wno-error"
 cd ..
+
+# Clean up files for later usage in documentation
 for file in *.txt; do mv -f $file ${file%.txt}; done
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -D -p -m 755 src/%{name} $RPM_BUILD_ROOT%{_bindir}/%{name}
-install -D -p -m 644 man/dislocker_man $RPM_BUILD_ROOT%{_mandir}/man1/%{name}.1
-install -D -p -m 755 src/fuse-%{name} $RPM_BUILD_ROOT%{_bindir}/fuse-%{name}
-install -D -p -m 644 man/dislocker_man $RPM_BUILD_ROOT%{_mandir}/man1/fuse-%{name}.1
+
+cd src
+make DESTDIR=$RPM_BUILD_ROOT install
+cd ..
+
+# Install a copy of the man page for FUSE package
+install -p -m 644 man/dislocker_man $RPM_BUILD_ROOT%{_mandir}/man1/%{name}-fuse.1
+
+# Remove standard symlink due to alternatives
+rm -f $RPM_BUILD_ROOT%{_bindir}/%{name}
+
+# Remove symlink, because of missing -devel package
+rm -f $RPM_BUILD_ROOT%{_libdir}/libdislocker.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post
+%{_sbindir}/update-alternatives --install %{_bindir}/%{name} %{name} %{_bindir}/%{name}-file 60
+
+%preun
+if [ $1 = 0 ]; then
+  %{_sbindir}/update-alternatives --remove %{name} %{_bindir}/%{name}-file
+fi
+
+%post libs -p /sbin/ldconfig
+
+%postun libs -p /sbin/ldconfig
+
+%post -n fuse-dislocker
+%{_sbindir}/update-alternatives --install %{_bindir}/%{name} %{name} %{_bindir}/%{name}-fuse 80
+
+%preun -n fuse-dislocker
+if [ $1 = 0 ]; then
+  %{_sbindir}/update-alternatives --remove %{name} %{_bindir}/%{name}-fuse
+fi
+
 %files
 %defattr(-,root,root,-)
-%doc CHANGELOG LICENSE README
-%{_bindir}/%{name}
+%{_bindir}/%{name}-bek
+%{_bindir}/%{name}-file
+%{_bindir}/%{name}-metadata
 %{_mandir}/man1/%{name}.1*
+
+%files libs
+%defattr(-,root,root,-)
+%doc CHANGELOG LICENSE README
+%{_libdir}/libdislocker.so.*
 
 %files -n fuse-dislocker
 %defattr(-,root,root,-)
-%doc CHANGELOG LICENSE README
-%{_bindir}/fuse-%{name}
-%{_mandir}/man1/fuse-%{name}.1*
+%{_bindir}/%{name}-fuse
+%{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Sat May 30 2015 Robert Scheck <robert@fedoraproject.org> 0.4.1-1
+- Upgrade to 0.4.1
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.1-6.20140423git
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 

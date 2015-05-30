@@ -1,0 +1,15 @@
+Patch by Robert Scheck <robert@fedoraproject.org> for dislocker >= 0.4.1 which adds
+a missing include to avoid the build-time error "expected specifier-qualifier-list
+before 'off_t'" on Red Hat Enterprise Linux 5 (and derivates like CentOS). See also
+https://github.com/Aorimn/dislocker/issues/35 for further details.
+ 
+--- dislocker-0.4.1/src/config.h		2014-11-16 18:35:11.000000000 +0100
++++ dislocker-0.4.1/src/config.h.off_t		2015-05-30 21:08:24.000000000 +0200
+@@ -25,6 +25,7 @@
+ 
+ 
+ #include "xstd/xstdio.h"
++#include <sys/types.h>
+ 
+ 
+ 
