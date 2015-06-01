@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
 Version:         0.4.1
-Release:         1%{?dist}
+Release:         2%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
@@ -65,10 +65,8 @@ reading from it or writing to it is possible.
 %patch1 -p1 -b .off_t
 
 %build
-# PolarSSL was bought by ARM in November 2014 and renamed to mbed TLS
-if [ -f %{_libdir}/libmbedtls.so ]; then
-  sed -e 's/-lpolarssl/-lmbedtls/g' -i src/Makefile src/accesses/user_pass/Makefile
-fi
+# PolarSSL was acquired by ARM in November 2014 and renamed to mbed TLS
+sed -e 's/-lpolarssl/-lmbedtls/g' -i src/Makefile src/accesses/user_pass/Makefile
 
 cd src
 make %{?_smp_mflags} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wno-error"
@@ -134,6 +132,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Mon Jun 01 2015 Robert Scheck <robert@fedoraproject.org> 0.4.1-2
+- Rebuilt for mbed TLS 1.3.10
+
 * Sat May 30 2015 Robert Scheck <robert@fedoraproject.org> 0.4.1-1
 - Upgrade to 0.4.1
 
