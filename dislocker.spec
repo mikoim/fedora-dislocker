@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
 Version:         0.4.1
-Release:         4%{?dist}
+Release:         5%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
@@ -12,7 +12,7 @@ Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
 Requires(post):  %{_sbindir}/update-alternatives
 Requires(preun): %{_sbindir}/update-alternatives
 Provides:        %{_bindir}/%{name}
-BuildRequires:   %{_includedir}/polarssl/config.h
+BuildRequires:   mbedtls-devel
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -67,6 +67,16 @@ reading from it or writing to it is possible.
 %build
 # PolarSSL was acquired by ARM in November 2014 and renamed to mbed TLS
 sed -e 's/-lpolarssl/-lmbedtls/g' -i src/Makefile src/accesses/user_pass/Makefile
+sed -e 's/polarssl/mbedtls/g' -i src/{accesses/stretch_key,encommon,ssl_bindings}.h
+sed -e 's/aes_context/mbedtls_aes_context/g' -i src/ssl_bindings.h
+sed -e 's/sha2\.h/sha256\.h/g' -i src/accesses/stretch_key.h
+sed -e 's/AES_ENCRYPT/MBEDTLS_AES_ENCRYPT/g' -i src/encryption/{decrypt,encrypt}.c
+sed -e 's/AES_DECRYPT/MBEDTLS_AES_DECRYPT/g' -i src/encryption/{decrypt,encrypt}.c
+sed -e 's/aes_setkey_enc/mbedtls_aes_setkey_enc/g' -i src/ssl_bindings.h
+sed -e 's/aes_crypt_ecb/mbedtls_aes_crypt_ecb/g' -i src/ssl_bindings.h
+sed -e 's/aes_crypt_cbc/mbedtls_aes_crypt_cbc/g' -i src/ssl_bindings.h
+sed -e 's/aes_setkey_dec/mbedtls_aes_setkey_dec/g' -i src/ssl_bindings.h
+sed -e 's/sha2(/mbedtls_sha256(/' -i src/ssl_bindings.h
 
 cd src
 make %{?_smp_mflags} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wno-error"
@@ -132,6 +142,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Sat Jul 25 2015 Robert Scheck <robert@fedoraproject.org> 0.4.1-5
+- Rebuilt for mbed TLS 2.0.0
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
