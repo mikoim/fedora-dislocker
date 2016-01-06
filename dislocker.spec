@@ -1,18 +1,20 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
-Version:         0.4.1
-Release:         5%{?dist}
+Version:         0.5.1
+Release:         1%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
 Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
-Patch0:          dislocker-0.4.1-paths.patch
-Patch1:          dislocker-0.4.1-off_t.patch
+Patch0:          dislocker-0.5.1-limits.patch
+Patch1:          dislocker-0.5.1-destdir.patch
+Patch2:          dislocker-0.5.1-assert.patch
+Patch3:          dislocker-0.5.1-off_t.patch
 Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
 Requires(post):  %{_sbindir}/update-alternatives
 Requires(preun): %{_sbindir}/update-alternatives
 Provides:        %{_bindir}/%{name}
-BuildRequires:   mbedtls-devel
+BuildRequires:   cmake, mbedtls-devel
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -61,45 +63,28 @@ reading from it or writing to it is possible.
 
 %prep
 %setup -q
-%patch0 -p1 -b .paths
-%patch1 -p1 -b .off_t
+%patch0 -p1 -b .limits
+%patch1 -p1 -b .destdir
+%patch2 -p1 -b .assert
+%patch3 -p1 -b .off_t
 
 %build
-# PolarSSL was acquired by ARM in November 2014 and renamed to mbed TLS
-sed -e 's/-lpolarssl/-lmbedtls/g' -i src/Makefile src/accesses/user_pass/Makefile
-sed -e 's/polarssl/mbedtls/g' -i src/{accesses/stretch_key,encommon,ssl_bindings}.h
-sed -e 's/aes_context/mbedtls_aes_context/g' -i src/ssl_bindings.h
-sed -e 's/sha2\.h/sha256\.h/g' -i src/accesses/stretch_key.h
-sed -e 's/AES_ENCRYPT/MBEDTLS_AES_ENCRYPT/g' -i src/encryption/{decrypt,encrypt}.c
-sed -e 's/AES_DECRYPT/MBEDTLS_AES_DECRYPT/g' -i src/encryption/{decrypt,encrypt}.c
-sed -e 's/aes_setkey_enc/mbedtls_aes_setkey_enc/g' -i src/ssl_bindings.h
-sed -e 's/aes_crypt_ecb/mbedtls_aes_crypt_ecb/g' -i src/ssl_bindings.h
-sed -e 's/aes_crypt_cbc/mbedtls_aes_crypt_cbc/g' -i src/ssl_bindings.h
-sed -e 's/aes_setkey_dec/mbedtls_aes_setkey_dec/g' -i src/ssl_bindings.h
-sed -e 's/sha2(/mbedtls_sha256(/' -i src/ssl_bindings.h
-
-cd src
-make %{?_smp_mflags} RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wno-error"
-cd ..
-
-# Clean up files for later usage in documentation
-for file in *.txt; do mv -f $file ${file%.txt}; done
+%cmake -D WARN_FLAGS="-Wall -Wno-error -Wextra" .
+make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
-cd src
 make DESTDIR=$RPM_BUILD_ROOT install
-cd ..
 
-# Install a copy of the man page for FUSE package
-install -p -m 644 man/dislocker_man $RPM_BUILD_ROOT%{_mandir}/man1/%{name}-fuse.1
-
-# Remove standard symlink due to alternatives
-rm -f $RPM_BUILD_ROOT%{_bindir}/%{name}
+# Remove standard symlinks due to alternatives
+rm -f $RPM_BUILD_ROOT{%{_bindir}/%{name},%{_mandir}/man1/%{name}.1*}
 
 # Remove symlink, because of missing -devel package
 rm -f $RPM_BUILD_ROOT%{_libdir}/libdislocker.so
+
+# Clean up files for later usage in documentation
+for file in *.md; do mv -f $file ${file%.md}; done
+for file in *.txt; do mv -f $file ${file%.txt}; done
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -129,11 +114,13 @@ fi
 %{_bindir}/%{name}-bek
 %{_bindir}/%{name}-file
 %{_bindir}/%{name}-metadata
-%{_mandir}/man1/%{name}.1*
+%{_mandir}/man1/%{name}-file.1*
 
 %files libs
 %defattr(-,root,root,-)
-%doc CHANGELOG LICENSE README
+%{!?_licensedir:%global license %%doc}
+%license LICENSE
+%doc CHANGELOG README
 %{_libdir}/libdislocker.so.*
 
 %files -n fuse-dislocker
@@ -142,6 +129,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Wed Jan 06 2016 Robert Scheck <robert@fedoraproject.org> 0.5.1-1
+- Upgrade to 0.5.1
+
 * Sat Jul 25 2015 Robert Scheck <robert@fedoraproject.org> 0.4.1-5
 - Rebuilt for mbed TLS 2.0.0
 

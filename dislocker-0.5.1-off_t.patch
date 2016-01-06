@@ -1,0 +1,23 @@
+Patch by Robert Scheck <robert@fedoraproject.org> for dislocker >= 0.5.1 to avoid build-time error "error:
+expected declaration specifiers or '...' before 'off_t'"; see: https://github.com/Aorimn/dislocker/pull/57
+
+--- dislocker-0.5.1/include/dislocker/encryption/decrypt.h		2016-01-03 16:55:16.000000000 +0100
++++ dislocker-0.5.1/include/dislocker/encryption/decrypt.h.off_t	2016-01-06 03:16:56.000000000 +0100
+@@ -27,6 +27,7 @@
+ #define AUTHENTICATOR_LENGTH 16
+ 
+ 
++#include <sys/types.h>
+ #include "dislocker/xstd/xstdio.h" // Only for off_t
+ #include "dislocker/encryption/encommon.h"
+ 
+--- dislocker-0.5.1/include/dislocker/dislocker.h			2016-01-03 16:55:16.000000000 +0100
++++ dislocker-0.5.1/include/dislocker/dislocker.h.off_t			2016-01-06 03:25:27.843909780 +0100
+@@ -24,6 +24,7 @@
+ #define DISLOCKER_MAIN_H
+ 
+ #include <stdint.h>
++#include <sys/types.h>
+ #include "dislocker/xstd/xstdio.h" // Only for off_t
+ 
+ 

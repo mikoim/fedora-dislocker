@@ -1,0 +1,23 @@
+Patch by Robert Scheck <robert@fedoraproject.org> for dislocker >= 0.5.1 to avoid build-
+error "error: 'UINT_MAX' undeclared"; see: https://github.com/Aorimn/dislocker/pull/56
+
+--- dislocker-0.5.1/src/metadata/vmk.c			2016-01-03 16:55:16.000000000 +0100
++++ dislocker-0.5.1/src/metadata/vmk.c.limits		2016-01-06 02:20:13.517191777 +0100
+@@ -22,6 +22,7 @@
+  */
+ 
+ 
++#include <limits.h>
+ #include "dislocker/encryption/decrypt.h"
+ #include "dislocker/metadata/vmk.h"
+ 
+--- dislocker-0.5.1/src/metadata/fvek.c			2016-01-03 16:55:16.000000000 +0100
++++ dislocker-0.5.1/src/metadata/fvek.c.limits		2016-01-06 02:21:33.535499812 +0100
+@@ -21,6 +21,7 @@
+  * USA.
+  */
+ 
++#include <limits.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
