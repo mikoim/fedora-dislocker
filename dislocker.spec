@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
 Version:         0.5.1
-Release:         1%{?dist}
+Release:         2%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
@@ -10,11 +10,17 @@ Patch0:          dislocker-0.5.1-limits.patch
 Patch1:          dislocker-0.5.1-destdir.patch
 Patch2:          dislocker-0.5.1-assert.patch
 Patch3:          dislocker-0.5.1-off_t.patch
+Patch4:          dislocker-0.5.1-libdir.patch
 Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
+%if 0%{?fedora} || 0%{?rhel} >= 7
+Requires:        ruby(release), ruby(runtime_executable)
+%else
+Requires:        %{_bindir}/ruby
+%endif
 Requires(post):  %{_sbindir}/update-alternatives
 Requires(preun): %{_sbindir}/update-alternatives
 Provides:        %{_bindir}/%{name}
-BuildRequires:   cmake, mbedtls-devel
+BuildRequires:   cmake, mbedtls-devel, ruby-devel, %{_bindir}/ruby
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -67,6 +73,7 @@ reading from it or writing to it is possible.
 %patch1 -p1 -b .destdir
 %patch2 -p1 -b .assert
 %patch3 -p1 -b .off_t
+%patch4 -p1 -b .libdir
 
 %build
 %cmake -D WARN_FLAGS="-Wall -Wno-error -Wextra" .
@@ -113,8 +120,10 @@ fi
 %defattr(-,root,root,-)
 %{_bindir}/%{name}-bek
 %{_bindir}/%{name}-file
+%{_bindir}/%{name}-find
 %{_bindir}/%{name}-metadata
 %{_mandir}/man1/%{name}-file.1*
+%{_mandir}/man1/%{name}-find.1*
 
 %files libs
 %defattr(-,root,root,-)
@@ -129,6 +138,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Mon Jan 11 2016 Robert Scheck <robert@fedoraproject.org> 0.5.1-2
+- Build ruby extension and ship dislocker-find
+
 * Wed Jan 06 2016 Robert Scheck <robert@fedoraproject.org> 0.5.1-1
 - Upgrade to 0.5.1
 
