@@ -1,0 +1,30 @@
+Patch by Robert Scheck <robert@fedoraproject.org> for dislocker >= 0.5.1 to ensure that
+library is getting installed into ${LIB_INSTALL_DIR} if it's defined via cmake. Otherwise
+use the previous detection mechanism (which fails on Fedora and RHEL, because rubygems is
+shipping /usr/lib/gems/ruby and /usr/lib64/gems/ruby directories on all architectures and
+thus leads to /usr/lib64 for ix86); see: https://github.com/Aorimn/dislocker/issues/59
+
+--- dislocker-0.5.1/src/CMakeLists.txt			2016-01-03 16:55:16.000000000 +0100
++++ dislocker-0.5.1/src/CMakeLists.txt.libdir		2016-01-11 01:28:38.000000000 +0100
+@@ -132,12 +132,16 @@
+   set(mandir ${sharedir}/man)
+ endif()
+ 
+-if(NOT DEFINED libdir)
+-	if(IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64")
+-		set(libdir "${CMAKE_INSTALL_PREFIX}/lib64")
+-	else()
+-		set(libdir "${CMAKE_INSTALL_PREFIX}/lib")
++if(NOT DEFINED LIB_INSTALL_DIR)
++	if(NOT DEFINED libdir)
++		if(IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64")
++			set(libdir "${CMAKE_INSTALL_PREFIX}/lib64")
++		else()
++			set(libdir "${CMAKE_INSTALL_PREFIX}/lib")
++		endif()
+ 	endif()
++else()
++	set(libdir ${LIB_INSTALL_DIR})
+ endif()
+ 
+ if(NOT DEFINED bindir)
