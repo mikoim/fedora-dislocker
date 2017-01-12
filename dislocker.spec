@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
 Version:         0.5.1
-Release:         4%{?dist}
+Release:         5%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
@@ -138,6 +138,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Thu Jan 12 2017 Mamoru TASAKA <mtasaka@fedoraproject.org> - 0.5.1-5
+- F-26: rebuild for ruby24
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.5.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
