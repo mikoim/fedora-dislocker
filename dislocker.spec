@@ -1,16 +1,11 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
-Version:         0.5.1
-Release:         6%{?dist}
+Version:         0.7.1
+Release:         1%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
 Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
-Patch0:          dislocker-0.5.1-limits.patch
-Patch1:          dislocker-0.5.1-destdir.patch
-Patch2:          dislocker-0.5.1-assert.patch
-Patch3:          dislocker-0.5.1-off_t.patch
-Patch4:          dislocker-0.5.1-libdir.patch
 Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
 %if 0%{?fedora} || 0%{?rhel} >= 7
 Requires:        ruby(release), ruby(runtime_executable)
@@ -25,9 +20,10 @@ BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
-under a Linux system. The driver used to only read volumes encrypted under a
-Microsoft Windows 7 system - but is now Microsoft Windows Vista and 8 capable
-and has the write functionality.
+under a Linux system. The driver has the capability to read/write partitions
+encrypted using Microsoft Windows Vista, 7, 8, 8.1 and 10 (AES-CBC, AES-XTS,
+128 or 256 bits, with or without the Elephant diffuser, encrypted partitions);
+BitLocker-To-Go encrypted partitions (USB/FAT32 partitions).
 
 The file name where the BitLocker encrypted partition will be decrypted needs
 to be given. This may take a long time, depending on the size of the encrypted
@@ -58,9 +54,10 @@ BuildRequires:   fuse-devel
 
 %description -n fuse-dislocker
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
-under a Linux system. The driver used to only read volumes encrypted under a
-Microsoft Windows 7 system - but is now Microsoft Windows Vista and 8 capable
-and has the write functionality.
+under a Linux system. The driver has the capability to read/write partitions
+encrypted using Microsoft Windows Vista, 7, 8, 8.1 and 10 (AES-CBC, AES-XTS,
+128 or 256 bits, with or without the Elephant diffuser, encrypted partitions);
+BitLocker-To-Go encrypted partitions (USB/FAT32 partitions).
 
 A mount point needs to be given to dislocker-fuse. Once keys are decrypted, a
 file named 'dislocker-file' appears into this provided mount point. This file
@@ -69,11 +66,6 @@ reading from it or writing to it is possible.
 
 %prep
 %setup -q
-%patch0 -p1 -b .limits
-%patch1 -p1 -b .destdir
-%patch2 -p1 -b .assert
-%patch3 -p1 -b .off_t
-%patch4 -p1 -b .libdir
 
 %build
 %cmake -D WARN_FLAGS="-Wall -Wno-error -Wextra" .
@@ -138,6 +130,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Tue May 23 2017 Robert Scheck <robert@fedoraproject.org> 0.7.1-1
+- Upgrade to 0.7.1
+
 * Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.5.1-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
