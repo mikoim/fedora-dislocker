@@ -16,7 +16,6 @@ Requires(post):  %{_sbindir}/update-alternatives
 Requires(preun): %{_sbindir}/update-alternatives
 Provides:        %{_bindir}/%{name}
 BuildRequires:   cmake, mbedtls-devel, ruby-devel, %{_bindir}/ruby
-BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
