@@ -84,9 +84,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libdislocker.so
 for file in *.md; do mv -f $file ${file%.md}; done
 for file in *.txt; do mv -f $file ${file%.txt}; done
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %post
 %{_sbindir}/update-alternatives --install %{_bindir}/%{name} %{name} %{_bindir}/%{name}-file 60
 
