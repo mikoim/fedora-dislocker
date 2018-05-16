@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
 Version:         0.7.1
-Release:         7%{?dist}
+Release:         8%{?dist}
 License:         GPLv2+
 Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
@@ -126,6 +126,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Thu May 17 2018 Robert Scheck <robert@fedoraproject.org> 0.7.1-8
+- Rebuilt for mbed TLS 2.7.3/2.9.0 (libmbedcrypto.so.2)
+
 * Mon Feb 19 2018 Robert Scheck <robert@fedoraproject.org> 0.7.1-7
 - Rebuilt for mbed TLS 2.7.0
 
