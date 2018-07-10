@@ -106,7 +106,6 @@ if [ $1 = 0 ]; then
 fi
 
 %files
-%defattr(-,root,root,-)
 %{_bindir}/%{name}-bek
 %{_bindir}/%{name}-file
 %{_bindir}/%{name}-find
@@ -115,14 +114,12 @@ fi
 %{_mandir}/man1/%{name}-find.1*
 
 %files libs
-%defattr(-,root,root,-)
 %{!?_licensedir:%global license %%doc}
 %license LICENSE
 %doc CHANGELOG README
 %{_libdir}/libdislocker.so.*
 
 %files -n fuse-dislocker
-%defattr(-,root,root,-)
 %{_bindir}/%{name}-fuse
 %{_mandir}/man1/%{name}-fuse.1*
 
