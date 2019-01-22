@@ -93,9 +93,7 @@ if [ $1 = 0 ]; then
   %{_sbindir}/update-alternatives --remove %{name} %{_bindir}/%{name}-file
 fi
 
-%post libs -p /sbin/ldconfig
-
-%postun libs -p /sbin/ldconfig
+%ldconfig_scriptlets libs
 
 %post -n fuse-dislocker
 %{_sbindir}/update-alternatives --install %{_bindir}/%{name} %{name} %{_bindir}/%{name}-fuse 80
