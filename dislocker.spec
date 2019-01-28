@@ -3,7 +3,6 @@ Name:            dislocker
 Version:         0.7.1
 Release:         11%{?dist}
 License:         GPLv2+
-Group:           Applications/System
 URL:             https://github.com/Aorimn/dislocker
 Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
 Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
@@ -35,7 +34,6 @@ NTFS partition and won't have any link to the original BitLocker partition.
 
 %package libs
 Summary:         Libraries for applications using dislocker
-Group:           System Environment/Libraries
 
 %description libs
 The dislocker-libs package provides the essential shared libraries for any
@@ -43,7 +41,6 @@ dislocker client program or interface.
 
 %package -n fuse-dislocker
 Summary:         FUSE filesystem to access BitLocker encrypted volumes
-Group:           Applications/System
 Provides:        %{_bindir}/%{name}
 Provides:        dislocker-fuse = %{version}-%{release}
 Provides:        dislocker-fuse%{?_isa} = %{version}-%{release}
