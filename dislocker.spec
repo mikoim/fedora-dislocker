@@ -7,15 +7,22 @@ URL:             https://github.com/Aorimn/dislocker
 Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
 Requires:        %{name}-libs%{?_isa} = %{version}-%{release}
 %if 0%{?fedora} || 0%{?rhel} >= 7
-Requires:        ruby(release), ruby(runtime_executable)
+Requires:        ruby(release)
+Requires:        ruby(runtime_executable)
 %else
 Requires:        %{_bindir}/ruby
 %endif
 Requires(post):  %{_sbindir}/update-alternatives
 Requires(preun): %{_sbindir}/update-alternatives
 Provides:        %{_bindir}/%{name}
-BuildRequires:  gcc
-BuildRequires:   cmake, mbedtls-devel, ruby-devel, %{_bindir}/ruby
+BuildRequires:   gcc
+BuildRequires:   cmake
+%if 0%{?rhel} && 0%{?rhel} < 8
+BuildRequires:   cmake3
+%endif
+BuildRequires:   mbedtls-devel
+BuildRequires:   ruby-devel
+BuildRequires:   %{_bindir}/ruby
 
 %description
 Dislocker has been designed to read BitLocker encrypted partitions ("drives")
@@ -65,18 +72,20 @@ reading from it or writing to it is possible.
 %setup -q
 
 %build
+%if 0%{?rhel} && 0%{?rhel} < 8
+%global cmake %cmake3
+%global cmake_build %cmake3_build
+%global cmake_install %cmake3_install
+%endif
+
 %cmake -D WARN_FLAGS="-Wall -Wno-error -Wextra" .
-make %{?_smp_mflags}
+%cmake_build
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT install
+%cmake_install
 
 # Remove standard symlinks due to alternatives
 rm -f $RPM_BUILD_ROOT{%{_bindir}/%{name},%{_mandir}/man1/%{name}.1*}
-
-# Remove symlink, because of missing -devel package
-rm -f $RPM_BUILD_ROOT%{_libdir}/libdislocker.so
 
 # Clean up files for later usage in documentation
 for file in *.md; do mv -f $file ${file%.md}; done
@@ -109,19 +118,20 @@ fi
 %{_mandir}/man1/%{name}-find.1*
 
 %files libs
-%{!?_licensedir:%global license %%doc}
 %license LICENSE
 %doc CHANGELOG README
 %{_libdir}/libdislocker.so.*
+# dislocker-find (ruby) fails without this symlink (#1583480)
+%{_libdir}/libdislocker.so
 
 %files -n fuse-dislocker
 %{_bindir}/%{name}-fuse
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
-* Sat Aug 01 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.1-17
-- Second attempt - Rebuilt for
-  https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+* Tue Aug 04 2020 Robert Scheck <robert@fedoraproject.org> 0.7.1-17
+- Work around CMake out-of-source builds on all branches (#1863427)
+- Add libdislocker.so symlink for dislocker-find (#1659733, #1583480)
 
 * Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.1-16
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
