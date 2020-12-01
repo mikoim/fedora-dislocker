@@ -1,7 +1,7 @@
 Summary:         Utility to access BitLocker encrypted volumes
 Name:            dislocker
-Version:         0.7.1
-Release:         17%{?dist}
+Version:         0.7.3
+Release:         1%{?dist}
 License:         GPLv2+
 URL:             https://github.com/Aorimn/dislocker
 Source0:         https://github.com/Aorimn/dislocker/archive/v%{version}.tar.gz
@@ -129,6 +129,9 @@ fi
 %{_mandir}/man1/%{name}-fuse.1*
 
 %changelog
+* Tue 01 Dec 2020 Eshin Kunishima <ek@esh.ink> 0.7.3-1
+- Upgrade to 0.7.3
+
 * Tue Aug 04 2020 Robert Scheck <robert@fedoraproject.org> 0.7.1-17
 - Work around CMake out-of-source builds on all branches (#1863427)
 - Add libdislocker.so symlink for dislocker-find (#1659733, #1583480)
